@@ -2,20 +2,20 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HUYMANH HACKER SYSTEM V2</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>HUYMANH HACKER SYSTEM</title>
     <style>
         :root {
-            --neon-green: #0f0;
-            --dark-bg: #000;
-            --hacker-font: 'Courier New', Courier, monospace;
+            --neon-green: #00ff00;
+            --dark-bg: #000000;
         }
 
         body {
             background-color: var(--dark-bg);
             color: var(--neon-green);
-            font-family: var(--hacker-font);
+            font-family: 'Courier New', Courier, monospace;
             margin: 0;
+            padding: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -24,91 +24,86 @@
             overflow: hidden;
         }
 
-        /* Canvas nền hiệu ứng Matrix */
         #matrix-canvas {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: -1; /* Đẩy xuống nền */
-            opacity: 0.5; /* Làm mờ để dễ nhìn giao diện chính */
+            z-index: 1;
+            opacity: 0.4;
         }
 
-        /* Màn hình đăng nhập và ứng dụng chính */
-        #login-screen, #main-app {
-            position: relative; /* Nổi lên trên canvas */
-            z-index: 10;
-        }
-
-        .login-box {
-            border: 1px solid var(--neon-green);
-            padding: 30px;
-            box-shadow: 0 0 30px rgba(0, 255, 0, 0.4);
+        /* Container đăng nhập */
+        #login-screen {
+            position: relative;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 40px 20px;
+            border: 2px solid var(--neon-green);
+            box-shadow: 0 0 20px var(--neon-green);
             text-align: center;
-            background: rgba(0, 0, 0, 0.9); /* Nền đen mờ để che chữ matrix */
+            width: 280px;
+        }
+
+        /* Container chính */
+        #main-app {
+            display: none;
+            position: relative;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.85);
+            padding: 20px;
+            border: 1px solid var(--neon-green);
+            text-align: center;
+            width: 90%;
+            max-width: 400px;
+            border-radius: 15px;
         }
 
         input {
-            background: #000;
+            background: transparent;
             border: 1px solid var(--neon-green);
             color: var(--neon-green);
-            padding: 10px;
+            padding: 12px;
             margin: 10px 0;
-            outline: none;
-            width: 200px;
+            width: 80%;
             text-align: center;
+            outline: none;
+            font-size: 16px;
         }
 
-        button {
+        .btn-green {
             background: var(--neon-green);
-            color: #000;
+            color: black;
             border: none;
-            padding: 10px 20px;
+            padding: 12px 25px;
             font-weight: bold;
             cursor: pointer;
+            margin-top: 10px;
             text-transform: uppercase;
         }
 
-        button:hover {
-            box-shadow: 0 0 15px var(--neon-green);
+        .header-title {
+            font-size: 2.2em;
+            margin: 0 0 10px 0;
+            letter-spacing: 5px;
+            text-shadow: 0 0 10px var(--neon-green);
         }
 
-        /* Giao diện chính */
-        #main-app {
-            display: none;
-            text-align: center;
-            width: 100%;
-            max-width: 400px;
-            background: rgba(0, 0, 0, 0.9);
-            padding: 20px;
-            border: 1px solid var(--neon-green);
-        }
+        .coin-box { color: #ffff00; margin-bottom: 15px; font-weight: bold; }
 
-        .header {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-            animation: flicker 2s infinite;
-        }
-
-        .coin-status {
-            font-size: 1.2em;
-            margin-bottom: 20px;
-            color: #ff0;
-        }
-
-        .display-area {
-            font-size: 5em;
-            height: 100px;
+        .ai-output {
+            font-size: 4em;
+            height: 80px;
             margin: 10px 0;
-            font-weight: bold;
+            color: var(--neon-green);
         }
 
-        .dots-container {
+        .dots {
             display: flex;
             justify-content: center;
             gap: 15px;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
         }
 
         .dot {
@@ -123,196 +118,160 @@
             box-shadow: 0 0 15px var(--neon-green);
         }
 
-        /* Bàn phím Hacker */
         .keyboard {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
             gap: 10px;
-            padding: 10px;
         }
 
-        .num-key {
-            width: 60px;
-            height: 60px;
+        .key {
+            height: 55px;
             border: 1px solid var(--neon-green);
             background: rgba(0, 255, 0, 0.1);
             color: var(--neon-green);
-            font-size: 1.5em;
-            cursor: pointer;
+            font-size: 1.2em;
             display: flex;
             align-items: center;
             justify-content: center;
+            cursor: pointer;
+            user-select: none;
         }
 
-        .num-key:active {
+        .key:active {
             background: var(--neon-green);
-            color: #000;
+            color: black;
         }
 
-        @keyframes flicker {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.8; }
-            80% { opacity: 0.9; }
-        }
-
-        .error-msg { color: red; font-size: 0.8em; margin-top: 10px; }
+        #error-txt { color: #ff0000; font-size: 13px; margin-top: 10px; height: 15px; }
     </style>
 </head>
 <body>
 
-    <!-- PHẦN TỬ CANVAS TẠO HIỆU ỨNG MATRIX CHẠY NỀN -->
     <canvas id="matrix-canvas"></canvas>
 
     <!-- MÀN HÌNH ĐĂNG NHẬP -->
     <div id="login-screen">
-        <div class="login-box">
-            <h2 style="margin-top:0">SYSTEM ACCESS REQUIRED</h2>
-            <input type="text" id="username" placeholder="USER ID"><br>
-            <input type="password" id="password" placeholder="ACCESS CODE"><br>
-            <button onclick="login()">ENTER SYSTEM</button>
-            <div id="login-error" class="error-msg"></div>
-        </div>
+        <h2 style="margin: 0 0 20px 0;">LOGIN</h2>
+        <input type="text" id="user" placeholder="Tên đăng nhập">
+        <input type="password" id="pass" placeholder="Mật khẩu">
+        <button class="btn-green" onclick="handleLogin()">ĐĂNG NHẬP</button>
+        <div id="error-txt"></div>
     </div>
 
-    <!-- ỨNG DỤNG CHÍNH -->
+    <!-- MÀN HÌNH CHÍNH -->
     <div id="main-app">
-        <div class="header">HUYMANH</div>
-        <div class="coin-status">CREDITS: <span id="coin-count">100</span> XU</div>
+        <div class="header-title">HUYMANH</div>
+        <div class="coin-box">CREDITS: <span id="coins">100</span> XU</div>
         
-        <div class="display-area" id="ai-result">_</div>
+        <div class="ai-output" id="result">_</div>
 
-        <div class="dots-container">
-            <div class="dot" id="d1"></div>
-            <div class="dot" id="d2"></div>
-            <div class="dot" id="d3"></div>
-            <div class="dot" id="d4"></div>
+        <div class="dots">
+            <div class="dot" id="dot1"></div>
+            <div class="dot" id="dot2"></div>
+            <div class="dot" id="dot3"></div>
+            <div class="dot" id="dot4"></div>
         </div>
 
         <div class="keyboard">
-            <div class="num-key" onclick="press(0)">0</div>
-            <div class="num-key" onclick="press(1)">1</div>
-            <div class="num-key" onclick="press(2)">2</div>
-            <div class="num-key" onclick="press(3)">3</div>
-            <div class="num-key" onclick="press(4)">4</div>
-            <div class="num-key" onclick="press(5)">5</div>
-            <div class="num-key" onclick="press(6)">6</div>
-            <div class="num-key" onclick="press(7)">7</div>
-            <div class="num-key" onclick="press(8)">8</div>
-            <div class="num-key" onclick="press(9)">9</div>
+            <div class="key" onclick="press(0)">0</div>
+            <div class="key" onclick="press(1)">1</div>
+            <div class="key" onclick="press(2)">2</div>
+            <div class="key" onclick="press(3)">3</div>
+            <div class="key" onclick="press(4)">4</div>
+            <div class="key" onclick="press(5)">5</div>
+            <div class="key" onclick="press(6)">6</div>
+            <div class="key" onclick="press(7)">7</div>
+            <div class="key" onclick="press(8)">8</div>
+            <div class="key" onclick="press(9)">9</div>
         </div>
     </div>
 
     <script>
-        // --- LOGIC HỆ THỐNG HUYMANH (Vẫn giữ nguyên từ bản trước) ---
-        let coins = 100;
-        let sequence = [];
-        const loginData = { u: "huymanh123000", p: "huymanh123" };
-
-        function login() {
-            const user = document.getElementById('username').value;
-            const pass = document.getElementById('password').value;
-            const error = document.getElementById('login-error');
-
-            if(user === loginData.u && pass === loginData.p) {
-                document.getElementById('login-screen').style.display = 'none';
-                document.getElementById('main-app').style.display = 'block';
-            } else {
-                error.innerText = "ACCESS DENIED: INVALID CREDENTIALS";
-                setTimeout(() => error.innerText = "", 2000);
-            }
-        }
-
-        function press(num) {
-            if (coins <= 0) {
-                alert("HẾT XU! VUI LÒNG NẠP THÊM.");
-                return;
-            }
-
-            if (sequence.length < 4) {
-                sequence.push(num);
-                document.getElementById(`d${sequence.length}`).classList.add('active');
-
-                if (sequence.length === 4) {
-                    processAI();
-                }
-            }
-        }
-
-        function processAI() {
-            coins -= 1;
-            document.getElementById('coin-count').innerText = coins;
-
-            const sum = sequence.reduce((a, b) => a + b, 0) + 4;
-            const resDisplay = document.getElementById('ai-result');
-            
-            resDisplay.innerText = "CALC...";
-            
-            setTimeout(() => {
-                const isEven = sum % 2 === 0;
-                resDisplay.innerText = isEven ? "P" : "B";
-                resDisplay.style.color = isEven ? "#ff00ff" : "#00ffff";
-                
-                setTimeout(resetSequence, 3000);
-            }, 1000);
-        }
-
-        function resetSequence() {
-            sequence = [];
-            document.getElementById('ai-result').innerText = "_";
-            document.getElementById('ai-result').style.color = "var(--neon-green)";
-            for(let i=1; i<=4; i++) {
-                document.getElementById(`d${i}`).classList.remove('active');
-            }
-        }
-
-        // --- LOGIC HIỆU ỨNG MATRIX CHẠY NỀN ---
+        // 1. Matrix Effect
         const canvas = document.getElementById('matrix-canvas');
         const ctx = canvas.getContext('2d');
-
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
-
-        const matrixCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890@#$%^&*()_+{}[]|:;<>?,./\\";
-        const columns = canvas.width / 20; // Số cột chữ
-        const drops = [];
-
-        // Khởi tạo vị trí giọt mưa
-        for (let i = 0; i < columns; i++) {
-            drops[i] = 1; 
-        }
+        const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%";
+        const fontSize = 16;
+        const columns = canvas.width / fontSize;
+        const drops = Array(Math.floor(columns)).fill(1);
 
         function drawMatrix() {
-            // Nền đen mờ tạo hiệu ứng giọt nước rơi
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            ctx.fillStyle = var(--neon-green); 
-            ctx.font = '20px var(--hacker-font)';
-
+            ctx.fillStyle = "#0F0";
+            ctx.font = fontSize + "px arial";
             for (let i = 0; i < drops.length; i++) {
-                const text = matrixCharacters.charAt(Math.floor(Math.random() * matrixCharacters.length));
-                // Vị trí vẽ chữ
-                ctx.fillText(text, i * 20, drops[i] * 20);
-
-                // Gửi giọt nước về đầu nếu ra khỏi màn hình
-                if (drops[i] * 20 > canvas.height && Math.random() > 0.975) {
-                    drops[i] = 0;
-                }
-
-                // Tăng vị trí Y
+                const text = letters[Math.floor(Math.random() * letters.length)];
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
                 drops[i]++;
             }
         }
-
-        // Chạy hiệu ứng
         setInterval(drawMatrix, 50);
 
-        // Đảm bảo canvas responsive khi đổi kích thước màn hình
-        window.addEventListener('resize', () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        });
+        // 2. Login Logic
+        function handleLogin() {
+            const u = document.getElementById('user').value;
+            const p = document.getElementById('pass').value;
+            const err = document.getElementById('error-txt');
 
+            // Tài khoản: huymanh123000 | Mật khẩu: huymanh123
+            if (u === "huymanh123000" && p === "huymanh123") {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('main-app').style.display = 'block';
+            } else {
+                err.innerText = "Sai tài khoản hoặc mật khẩu!";
+                setTimeout(() => { err.innerText = ""; }, 2000);
+            }
+        }
+
+        // 3. App Logic
+        let currentCoins = 100;
+        let inputs = [];
+
+        function press(n) {
+            if (currentCoins <= 0) {
+                alert("Bạn đã hết xu!");
+                return;
+            }
+            if (inputs.length < 4) {
+                inputs.push(n);
+                document.getElementById('dot' + inputs.length).classList.add('active');
+                if (inputs.length === 4) {
+                    calculateResult();
+                }
+            }
+        }
+
+        function calculateResult() {
+            currentCoins -= 1;
+            document.getElementById('coins').innerText = currentCoins;
+            
+            const resDiv = document.getElementById('result');
+            resDiv.innerText = "...";
+
+            setTimeout(() => {
+                const sum = inputs.reduce((a, b) => a + b, 0) + 4;
+                const isEven = sum % 2 === 0;
+                
+                resDiv.innerText = isEven ? "P" : "B";
+                resDiv.style.color = isEven ? "#ff00ff" : "#00ffff";
+
+                // Tự động reset sau 2 giây để chơi tiếp
+                setTimeout(resetGame, 2000);
+            }, 800);
+        }
+
+        function resetGame() {
+            inputs = [];
+            document.getElementById('result').innerText = "_";
+            document.getElementById('result').style.color = "#00ff00";
+            for (let i = 1; i <= 4; i++) {
+                document.getElementById('dot' + i).classList.remove('active');
+            }
+        }
     </script>
 </body>
 </html>
