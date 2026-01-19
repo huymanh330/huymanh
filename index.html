@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HUYMANH HACKER SYSTEM</title>
+    <title>HUYMANH HACKER SYSTEM V2</title>
     <style>
         :root {
             --neon-green: #0f0;
@@ -22,27 +22,31 @@
             justify-content: center;
             height: 100vh;
             overflow: hidden;
-            text-shadow: 0 0 5px var(--neon-green);
         }
 
-        /* Màn hình đăng nhập */
-        #login-screen {
+        /* Canvas nền hiệu ứng Matrix */
+        #matrix-canvas {
             position: fixed;
-            inset: 0;
-            background: #000;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 100;
-            border: 2px solid var(--neon-green);
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1; /* Đẩy xuống nền */
+            opacity: 0.5; /* Làm mờ để dễ nhìn giao diện chính */
+        }
+
+        /* Màn hình đăng nhập và ứng dụng chính */
+        #login-screen, #main-app {
+            position: relative; /* Nổi lên trên canvas */
+            z-index: 10;
         }
 
         .login-box {
             border: 1px solid var(--neon-green);
             padding: 30px;
-            box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
+            box-shadow: 0 0 30px rgba(0, 255, 0, 0.4);
             text-align: center;
+            background: rgba(0, 0, 0, 0.9); /* Nền đen mờ để che chữ matrix */
         }
 
         input {
@@ -76,6 +80,9 @@
             text-align: center;
             width: 100%;
             max-width: 400px;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 20px;
+            border: 1px solid var(--neon-green);
         }
 
         .header {
@@ -153,10 +160,13 @@
 </head>
 <body>
 
+    <!-- PHẦN TỬ CANVAS TẠO HIỆU ỨNG MATRIX CHẠY NỀN -->
+    <canvas id="matrix-canvas"></canvas>
+
     <!-- MÀN HÌNH ĐĂNG NHẬP -->
     <div id="login-screen">
         <div class="login-box">
-            <h2 style="margin-top:0">SYSTEM ACCESS</h2>
+            <h2 style="margin-top:0">SYSTEM ACCESS REQUIRED</h2>
             <input type="text" id="username" placeholder="USER ID"><br>
             <input type="password" id="password" placeholder="ACCESS CODE"><br>
             <button onclick="login()">ENTER SYSTEM</button>
@@ -179,24 +189,21 @@
         </div>
 
         <div class="keyboard">
-            <!-- Hàng 1 -->
             <div class="num-key" onclick="press(0)">0</div>
             <div class="num-key" onclick="press(1)">1</div>
             <div class="num-key" onclick="press(2)">2</div>
             <div class="num-key" onclick="press(3)">3</div>
             <div class="num-key" onclick="press(4)">4</div>
-            <!-- Hàng 2 -->
             <div class="num-key" onclick="press(5)">5</div>
             <div class="num-key" onclick="press(6)">6</div>
             <div class="num-key" onclick="press(7)">7</div>
             <div class="num-key" onclick="press(8)">8</div>
             <div class="num-key" onclick="press(9)">9</div>
         </div>
-
-        <p style="margin-top:20px; font-size: 0.7em; color: #555;">ENCRYPTED SESSION ACTIVE</p>
     </div>
 
     <script>
+        // --- LOGIC HỆ THỐNG HUYMANH (Vẫn giữ nguyên từ bản trước) ---
         let coins = 100;
         let sequence = [];
         const loginData = { u: "huymanh123000", p: "huymanh123" };
@@ -232,11 +239,9 @@
         }
 
         function processAI() {
-            // Trừ xu
             coins -= 1;
             document.getElementById('coin-count').innerText = coins;
 
-            // Tính toán AI
             const sum = sequence.reduce((a, b) => a + b, 0) + 4;
             const resDisplay = document.getElementById('ai-result');
             
@@ -245,9 +250,8 @@
             setTimeout(() => {
                 const isEven = sum % 2 === 0;
                 resDisplay.innerText = isEven ? "P" : "B";
-                resDisplay.style.color = isEven ? "#ff00ff" : "#00ffff"; // P: Tím/Hồng, B: Cyan
+                resDisplay.style.color = isEven ? "#ff00ff" : "#00ffff";
                 
-                // Reset sau 3 giây để nhập lượt mới
                 setTimeout(resetSequence, 3000);
             }, 1000);
         }
@@ -260,6 +264,55 @@
                 document.getElementById(`d${i}`).classList.remove('active');
             }
         }
+
+        // --- LOGIC HIỆU ỨNG MATRIX CHẠY NỀN ---
+        const canvas = document.getElementById('matrix-canvas');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const matrixCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890@#$%^&*()_+{}[]|:;<>?,./\\";
+        const columns = canvas.width / 20; // Số cột chữ
+        const drops = [];
+
+        // Khởi tạo vị trí giọt mưa
+        for (let i = 0; i < columns; i++) {
+            drops[i] = 1; 
+        }
+
+        function drawMatrix() {
+            // Nền đen mờ tạo hiệu ứng giọt nước rơi
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = var(--neon-green); 
+            ctx.font = '20px var(--hacker-font)';
+
+            for (let i = 0; i < drops.length; i++) {
+                const text = matrixCharacters.charAt(Math.floor(Math.random() * matrixCharacters.length));
+                // Vị trí vẽ chữ
+                ctx.fillText(text, i * 20, drops[i] * 20);
+
+                // Gửi giọt nước về đầu nếu ra khỏi màn hình
+                if (drops[i] * 20 > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+
+                // Tăng vị trí Y
+                drops[i]++;
+            }
+        }
+
+        // Chạy hiệu ứng
+        setInterval(drawMatrix, 50);
+
+        // Đảm bảo canvas responsive khi đổi kích thước màn hình
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
     </script>
 </body>
 </html>
